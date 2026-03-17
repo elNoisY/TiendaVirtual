@@ -4,6 +4,8 @@ import os
 
 app = Flask(__name__)
 
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'tienda.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -17,6 +19,9 @@ class Registro(db.Model):
     producto_ref = db.Column(db.String(100), default="-")
     estado_pago = db.Column(db.String(50), default="Deuda")
     estado_entrega = db.Column(db.String(50), default="Pendiente")
+
+with app.app_context():
+    db.create_all()
 
 PRODUCTOS = [
     {
