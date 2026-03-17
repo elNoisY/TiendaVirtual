@@ -1,8 +1,22 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for 
+from flask_sqlalchemy import SQLAlchemy
+import os
 
 app = Flask(__name__)
 
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
 TELEFONO_CONTACTO = "51900000000"
+
+class Registro(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    telefono = db.Column(db.String(20), nullable=False)
+    nombre = db.Column(db.String(100), nullable=False)
+    cantidad = db.Column(db.String(50), default="0")
+    producto_ref = db.Column(db.String(100), default="-")
+    estado_pago = db.Column(db.String(50), default="Deuda")
+    estado_entrega = db.Column(db.String(50), default="Pendiente")
 
 PRODUCTOS = [
     {
@@ -79,6 +93,37 @@ PRODUCTOS = [
         "descripcion": "H2O enriquecido de oxígeno Purificador de agua natural Alcaliniza el PH del organismo, proporciona mayor oxígeno, elimina patógenos como hongos, virus, parásitos y bacterias. Eficaz para diferentes padecimientos como el cáncer, pie diabético, diabetes, miomas, quistes, tumores, entre otros."
     },
 ]
+
+@app.route('/index_principal')
+def index_principal():
+    return render_template('index_principal.html')
+
+@app.route('/registro_usuario', methods=['GET', 'POST'])
+def registro_usuario():
+    if request.method == 'POST': 
+        nom = request.form.get('nombre')
+        tel = request.form.get('telefono')
+        nuevo = Registro(nombre = nom, telefono = tel)
+        db.session.add(nuevo)
+        db.session.commit()
+        return redirect(url_for('home'))
+    return render_template('registro.html')
+
+@app.route('/administracion', methods=['GET', 'POST'])
+def administracion():
+    if request.method == 'POST':
+        reg_id = request.form.get('id')
+        registro = Registro.query.get(reg_id)
+        registro.cantidad = request.form.get('cantidad')
+        registro.producto_ref = request.form.get('producto_ref')
+        registro.estado_pago = request.form.get('estado_pago')
+        registro.estado_entrega = request.form.get('estado_entrega')
+        db.session.commit()
+        return redirect(url_for('administracion'))
+    
+    registros = Registro.query.all()
+    return render_template('administracion.html', registros=registros, productos=PRODUCTOS)
+
 
 @app.route('/')
 
