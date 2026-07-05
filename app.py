@@ -7,6 +7,8 @@ TELEFONO_CONTACTO = "51919438333"
 
 DB_PATH = "economia_qaybio.db"
 
+URL_WEBHOOK_DISCORD = "https://discord.com/api/webhooks/1523188570070847518/RV6eNCNNRIa_sB43GSC3AyrS8LT2gRL3b7faPB8egb3l5zkOvEjf5QKaQUy_2OnJwlcX"
+
 PRODUCTOS = [
     {
         "id": 1,
@@ -106,28 +108,14 @@ def registrar_clic():
 
     if user_id:
         try:
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
-
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS usuarios (
-                    user_id TEXT PRIMARY KEY,
-                    monedas INTEGER DEFAULT 0
-                )
-            """)
-
-            cursor.execute("SELECT monedas FROM usuarios WHERE user_id = ?", (user_id,))
-            if cursor.fetchone():
-                cursor.execute("UPDATE usuarios SET monedas = monedas + 50 WHERE user_id = ?", (user_id,))
-            else:
-                cursor.execute("INSERT INTO usuarios (user_id, monedas) VALUES (?, 50)", (user_id,))
-                
-            conn.commit()
-            conn.close()
-
+            data = {
+                "content": f"SISTEMA_MONEDAS_RECOMPENSA:{user_id}"
+            }
+            requests.post(URL_WEBHOOK_DISCORD, json=data)
+            
             return redirect("/?status=success")
         except Exception as e:
-            print(f"Error en la base de datos de monedas: {e}")
+            print(f"Error enviando webhook: {e}")
 
     return redirect("/")
 
