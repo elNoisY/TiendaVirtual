@@ -1,11 +1,9 @@
 from flask import Flask, render_template, request, redirect
-import sqlite3
+import requests
 
 app = Flask(__name__)
 
 TELEFONO_CONTACTO = "51919438333"
-
-DB_PATH = "economia_qaybio.db"
 
 URL_WEBHOOK_DISCORD = "https://discord.com/api/webhooks/1523188570070847518/RV6eNCNNRIa_sB43GSC3AyrS8LT2gRL3b7faPB8egb3l5zkOvEjf5QKaQUy_2OnJwlcX"
 
