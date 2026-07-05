@@ -1,8 +1,11 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
+import sqlite3
 
 app = Flask(__name__)
 
-TELEFONO_CONTACTO = "51919438512"
+TELEFONO_CONTACTO = "51919438333"
+
+DB_PATH = "C:\Users\arell\Downloads\Bot Platano/economia_qaybio.db"
 
 PRODUCTOS = [
     {
@@ -96,6 +99,30 @@ def producto(id):
     if p:
         return render_template('producto.html', producto = p, Whatsapp = TELEFONO_CONTACTO)
     return "Producto no encontrado", 404
+
+@app.route('/click')
+def registrar_clic():
+    user_id = request.args.get('user_id')
+
+    if user_id:
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+
+            cursor.execute("SELECT monedas FROM usuarios WHERE user_id = ?", (user_id,))
+            if cursor.fetchone():
+                cursor.execute("UPDATE usuarios SET monedas = monedas + 50 WHERE user_id = ?", (user_id,))
+            else:
+                cursor.execute("INSERT INTO usuarios (user_id, monedas) VALUES (?, 50)", (user_id,))
+                
+            conn.commit()
+            conn.close()
+
+            return redirect("http://127.0.0.1:7860/?status=success")
+        except Exception as e:
+            print(f"Error en la base de datos de monedas: {e}")
+
+    return redirect("http://127.0.0.1:7860/")
 
 if __name__ == '__main__':
     app.run(debug=True)
