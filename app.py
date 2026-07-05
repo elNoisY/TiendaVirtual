@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 TELEFONO_CONTACTO = "51919438333"
 
-DB_PATH = "C:\Users\arell\Downloads\Bot Platano/economia_qaybio.db"
+DB_PATH = "economia_qaybio.db"
 
 PRODUCTOS = [
     {
@@ -109,6 +109,13 @@ def registrar_clic():
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
 
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS usuarios (
+                    user_id TEXT PRIMARY KEY,
+                    monedas INTEGER DEFAULT 0
+                )
+            """)
+
             cursor.execute("SELECT monedas FROM usuarios WHERE user_id = ?", (user_id,))
             if cursor.fetchone():
                 cursor.execute("UPDATE usuarios SET monedas = monedas + 50 WHERE user_id = ?", (user_id,))
@@ -118,11 +125,11 @@ def registrar_clic():
             conn.commit()
             conn.close()
 
-            return redirect("http://127.0.0.1:7860/?status=success")
+            return redirect("/?status=success")
         except Exception as e:
             print(f"Error en la base de datos de monedas: {e}")
 
-    return redirect("http://127.0.0.1:7860/")
+    return redirect("/")
 
 if __name__ == '__main__':
     app.run(debug=True)
